@@ -32,6 +32,9 @@ runs:
     - name: Grab Python Version and Install
       id: python_processing
       uses: veracityio/composites/install_python@main
+    - name: Set Python Version
+      shell: bash
+      run: echo "PYTHON_VERSION=${{ steps.python_processing.outputs.python-version }}" >> $GITHUB_ENV
     - name: Set Environment
       shell: bash
       run: echo "ENVIRONMENT=${{ inputs.ENVIRONMENT }}" >> $GITHUB_ENV
