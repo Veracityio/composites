@@ -1,21 +1,18 @@
 name: Get Secret Token
+description: "Retrieve a secret token from AWS Secrets Manager"
 inputs:
   SECRET_ID:
     description: "The secret ID to retrieve"
     required: true
-    type: string
   AWS_REGION:
     description: "The AWS region to use"
     required: true
-    type: string
   AWS_ACCOUNT_ID:
     description: "The AWS account ID to use"
     required: true
-    type: string
   ROLE_NAME:
     description: "The IAM role name to assume"
     required: true
-    type: string
 
 outputs:
   result:
