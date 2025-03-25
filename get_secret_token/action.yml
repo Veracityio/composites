@@ -1,5 +1,5 @@
 name: Get Secret Token
-description: "Retrieve a secret token from AWS Secrets Manager"
+description: "Log into the target Region, AWS Account Id, Role Name, and Secret Name/Id in order to assume a role to retrieve a secret token from AWS Secrets Manager. The secrets manager is assumed to have a github token stored in it. Key is GITHUB_TOKEN. The token is returned as an output of this composite "
 inputs:
   SECRET_ID:
     description: "The secret ID to retrieve"
@@ -16,7 +16,7 @@ inputs:
 
 outputs:
   result:
-    description: "The secret token"
+    description: "The github secret token"
     value: ${{ steps.get-secret.outputs.SECRET_TOKEN }}
 runs:
   using: "composite"
