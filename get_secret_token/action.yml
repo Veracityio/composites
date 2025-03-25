@@ -21,16 +21,17 @@ outputs:
 runs:
   using: "composite"
   steps:
+    - name: Set AWS Role ARN
+      shell: bash
+      run: |
+        AWS_ROLE_ARN="arn:aws:iam::${{inputs.AWS_ACCOUNT_ID}}:role/${{ inputs.ROLE_NAME }}"
+        echo "INFRA_ROLE_ARN=$AWS_ROLE_ARN" >> $GITHUB_ENV
     - name: Configure Infra AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1.7.0
       with:
-        role-to-assume: arn:aws:iam::${{inputs.AWS_ACCOUNT_ID}}:role/${{ inputs.ROLE_NAME }} #change to reflect your IAM role’s ARN
+        role-to-assume: ${{ env.AWS_ROLE_ARN }} #change to reflect your IAM role’s ARN
         role-session-name: ${{ github.event.repository.name }}_infra_build
         aws-region: ${{ inputs.AWS_REGION }}
-    - name: Set Infra Role Arn
-      shell: bash
-      id: set-infra-role-arn
-      run: echo "INFRA_ROLE_ARN=$AWS_ROLE_ARN" >> $GITHUB_ENV
     - name: Get secret value
       id: get-secret
       shell: bash
