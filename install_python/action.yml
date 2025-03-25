@@ -3,6 +3,8 @@ description: "Extract the Python version from a TOML file and install it"
 runs:
     using: "composite"
     steps:
+        - name: Grab Repo code
+          uses: actions/checkout@v2
         - name: Extract Python Version
           shell: bash
           id: get-python
