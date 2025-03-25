@@ -1,5 +1,10 @@
 name: Parse TOML Python Version and Install it
 description: "This action reads the Python version from a pyproject.toml file and installs the specified version of Python using the setup-python action."
+outputs:
+    python-version:
+        description: "The Python version to install"
+        value: ${{ steps.get-python.outputs.python-version }}
+
 runs:
     using: "composite"
     steps:

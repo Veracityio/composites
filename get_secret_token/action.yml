@@ -15,7 +15,7 @@ inputs:
     required: true
 
 outputs:
-  result:
+  token:
     description: "The github secret token"
     value: ${{ steps.get-secret.outputs.SECRET_TOKEN }}
 runs:
@@ -27,6 +27,10 @@ runs:
         role-to-assume: arn:aws:iam::${{inputs.AWS_ACCOUNT_ID}}:role/${{ inputs.ROLE_NAME }} #change to reflect your IAM role’s ARN
         role-session-name: ${{ github.event.repository.name }}_infra_build
         aws-region: ${{ inputs.AWS_REGION }}
+    - name: Set Infra Role Arn
+      shell: bash
+      id: set-infra-role-arn
+      run: echo "INFRA_ROLE_ARN=$AWS_ROLE_ARN" >> $GITHUB_ENV
     - name: Get secret value
       id: get-secret
       shell: bash
