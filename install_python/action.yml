@@ -13,7 +13,7 @@ runs:
       with:
         ref: ${{ github.ref }}
     - name: Extract Python Version
-      id: get-python
+      id: get_python
       shell: bash
       run: |
         # Extract Python version, removing version constraint characters
@@ -28,12 +28,12 @@ runs:
         fi
 
         echo "Extracted Python version: $PYTHON_VERSION"
-        echo "python-version=$PYTHON_VERSION" >> $GITHUB_OUTPUT
+        echo "PYTHON_VERSION=$PYTHON_VERSION" >> $GITHUB_OUTPUT
 
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: ${{ steps.get-python.outputs.python-version }}
+        python-version: ${{ steps.get_python.outputs.PYTHON_VERSION }}
 
     - name: Verify Python Version
       shell: bash
