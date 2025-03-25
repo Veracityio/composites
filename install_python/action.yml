@@ -14,16 +14,19 @@ runs:
         ref: ${{ github.ref }}
     - name: Extract Python Version
       shell: bash
-      id: get-python
       run: |
         # Extract Python version, removing version constraint characters
-        PYTHON_VERSION=$(awk '/^\[tool\.poetry\]/{flag=1} flag&&/^python\s*=/{print $3}' pyproject.toml | \
-          sed -E 's/^[~^<>=]+//g; s/"//g')
+        PYTHON_VERSION=$(cat pyproject.toml | \
+          sed -n 's/.*python\s*=\s*"\([^"]*\)".*/\1/p' | \
+          sed -E 's/[~^<>=]+//g')
 
-        # Alternative method using grep and sed
-        # PYTHON_VERSION=$(grep "python =" pyproject.toml | sed -E 's/.*"[~^<>=]*([0-9.]+).*/\1/')
+        # Check if version was extracted
+        if [ -z "$PYTHON_VERSION" ]; then
+          echo "Failed to extract Python version from pyproject.toml"
+          exit 1
+        fi
 
-        echo "Python version: $PYTHON_VERSION"
+        echo "Extracted Python version: $PYTHON_VERSION"
         echo "python-version=$PYTHON_VERSION" >> $GITHUB_OUTPUT
 
     - name: Set up Python
