@@ -1,0 +1,49 @@
+name: Get Secret Token
+inputs:
+  SECRET_ID:
+    description: "The secret ID to retrieve"
+    required: true
+    type: string
+  AWS_REGION:
+    description: "The AWS region to use"
+    required: true
+    type: string
+  AWS_ACCOUNT_ID:
+    description: "The AWS account ID to use"
+    required: true
+    type: string
+  ROLE_NAME:
+    description: "The IAM role name to assume"
+    required: true
+    type: string
+
+outputs:
+  result:
+    description: "The secret token"
+    value: ${{ steps.get-secret.outputs.SECRET_TOKEN }}
+runs:
+  using: "composite"
+  steps:
+    - name: Configure Infra AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1.7.0
+      with:
+        role-to-assume: arn:aws:iam::${{inputs.AWS_ACCOUNT_ID}}:role/${{ inputs.ROLE_NAME }} #change to reflect your IAM role’s ARN
+        role-session-name: ${{ github.event.repository.name }}_infra_build
+        aws-region: ${{ inputs.AWS_REGION }}
+    - name: Get secret value
+      id: get-secret
+      run: |
+        # Get the JSON secret and parse it to extract SECRET_TOKEN
+        SECRET_TOKEN=$(aws secretsmanager get-secret-value \
+          --secret-id ${{ inputs.SECRET_ID }} \
+          --query 'SecretString' \
+          --output text | jq -r '.GITHUB_TOKEN')
+
+        # Mask the token
+        echo "::add-mask::$SECRET_TOKEN"
+
+        # Set as environment variable
+        echo "SECRET_TOKEN=$SECRET_TOKEN" >> $GITHUB_ENV
+
+        # Set as output
+        echo "::set-output name=SECRET_TOKEN::$SECRET_TOKEN"
