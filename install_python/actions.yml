@@ -1,0 +1,25 @@
+name: Parse TOML Python Version and Install it
+runs:
+    using: "composite"
+    steps:
+        - name: Extract Python Version
+          id: get-python
+          run: |
+              # Extract Python version, removing version constraint characters
+              PYTHON_VERSION=$(awk '/^\[tool\.poetry\]/{flag=1} flag&&/^python\s*=/{print $3}' pyproject.toml | \
+                sed -E 's/^[~^<>=]+//g; s/"//g')
+
+              # Alternative method using grep and sed
+              # PYTHON_VERSION=$(grep "python =" pyproject.toml | sed -E 's/.*"[~^<>=]*([0-9.]+).*/\1/')
+
+              echo "Python version: $PYTHON_VERSION"
+              echo "python-version=$PYTHON_VERSION" >> $GITHUB_OUTPUT
+
+        - name: Set up Python
+          uses: actions/setup-python@v5
+          with:
+              python-version: ${{ steps.get-python.outputs.python-version }}
+
+        - name: Verify Python Version
+          run: |
+              python --version
