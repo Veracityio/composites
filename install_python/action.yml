@@ -1,5 +1,5 @@
 name: Parse TOML Python Version and Install it
-description: "Extract the Python version from a TOML file and install it"
+description: "This action reads the Python version from a pyproject.toml file and installs the specified version of Python using the setup-python action."
 runs:
     using: "composite"
     steps:
