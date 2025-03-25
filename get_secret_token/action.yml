@@ -29,7 +29,7 @@ runs:
     - name: Configure Infra AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1.7.0
       with:
-        role-to-assume: ${{ env.AWS_ROLE_ARN }} #change to reflect your IAM role’s ARN
+        role-to-assume: ${{ env.INFRA_ROLE_ARN }} #change to reflect your IAM role’s ARN
         role-session-name: ${{ github.event.repository.name }}_infra_build
         aws-region: ${{ inputs.AWS_REGION }}
     - name: Get secret value
