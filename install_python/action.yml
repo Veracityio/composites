@@ -3,6 +3,7 @@ runs:
     using: "composite"
     steps:
         - name: Extract Python Version
+          shell: bash
           id: get-python
           run: |
               # Extract Python version, removing version constraint characters
@@ -21,5 +22,6 @@ runs:
               python-version: ${{ steps.get-python.outputs.python-version }}
 
         - name: Verify Python Version
+          shell: bash
           run: |
               python --version

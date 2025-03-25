@@ -32,6 +32,7 @@ runs:
         aws-region: ${{ inputs.AWS_REGION }}
     - name: Get secret value
       id: get-secret
+      shell: bash
       run: |
         # Get the JSON secret and parse it to extract SECRET_TOKEN
         SECRET_TOKEN=$(aws secretsmanager get-secret-value \
