@@ -13,6 +13,7 @@ runs:
       with:
         ref: ${{ github.ref }}
     - name: Extract Python Version
+      id: get-python
       shell: bash
       run: |
         # Extract Python version, removing version constraint characters
