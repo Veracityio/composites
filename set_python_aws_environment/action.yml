@@ -7,8 +7,8 @@ inputs:
   AWS_REGION:
     description: "The AWS region to use"
     required: true
-  AWS_ACCOUNT_ID:
-    description: "The AWS account ID to use. This would be the account that holds the Secret referenced in SECRET_ID"
+  INFRA_AWS_ACCOUNT_ID:
+    description: "The Infra AWS account ID to use. This would be the account that holds the Secret referenced in SECRET_ID"
     required: true
   ROLE_NAME:
     description: "The IAM role name to assume"
@@ -40,7 +40,7 @@ runs:
       run: echo "ENVIRONMENT=${{ inputs.ENVIRONMENT }}" >> $GITHUB_ENV
     - name: Set AWS Account ID
       shell: bash
-      run: echo "INFRA_ACCOUNT_NUMBER=${{ inputs.AWS_ACCOUNT_ID }}" >> $GITHUB_ENV
+      run: echo "INFRA_ACCOUNT_NUMBER=${{ inputs.INFRA_AWS_ACCOUNT_ID }}" >> $GITHUB_ENV
     - name: Set AWS Region
       shell: bash
       run: echo "AWS_REGION=${{ inputs.AWS_REGION }}" >> $GITHUB_ENV
@@ -50,7 +50,7 @@ runs:
       with:
         SECRET_ID: ${{ inputs.SECRET_ID }}
         AWS_REGION: ${{ inputs.AWS_REGION }}
-        AWS_ACCOUNT_ID: ${{ env.AWS_ACCOUNT_ID }}
+        INFRA_AWS_ACCOUNT_ID: ${{ env.INFRA_ACCOUNT_NUMBER }}
         ROLE_NAME: ${{ inputs.ROLE_NAME }}
     - name: Grab and set Infra Bucket SSM
       id: infra_bucket
@@ -61,9 +61,34 @@ runs:
     - name: Set APP_NAME
       shell: bash
       run: echo "APP_NAME=${{ github.event.repository.name }}" >> $GITHUB_ENV
-    - name: Grab and set AWS Account IDs
+    - name: Grab and set AWS Account JSON
       id: aws_account_ids
       shell: bash
       run: |
         AWS_ACCOUNT_IDS=$(aws ssm get-parameter --name ${{ inputs.SSM_PARAMETER_PREFIX }}/${{ inputs.AWS_ACCOUNT_IDS_SSM_PARAMETER_NAME }} --region ${{ inputs.AWS_REGION }} --query 'Parameter.Value' --output text)
         echo "AWS_ACCOUNT_IDS=${AWS_ACCOUNT_IDS}" >> $GITHUB_ENV
+    - name: Set AWS Account ID
+      shell: bash
+      run: |
+        JSON_DATA="${{ steps.aws_account_ids.outputs.AWS_ACCOUNT_IDS }}"
+        # check if env.ENVIRONMENT is set
+        if [ -z "${{ inputs.ENVIRONMENT }}" ]; then
+          echo "ENVIRONMENT is not set, defaulting to 'dev'"
+          ENV_KEY="dev"
+        else
+          ENV_KEY="${{ inputs.ENVIRONMENT }}"
+        fi
+
+        # If production, grab value from repo variable
+        if [ "$ENV_KEY" == "prd" ]; then
+          VALUE="${{ vars.PRODUCTION_ACCOUNT_ID }}"
+        else
+          # Extract the value using jq with the dynamic key
+          VALUE=$(echo $JSON_DATA | jq -r --arg env "$ENV_KEY" '.[$env]')
+
+          # Print the extracted value
+          echo "The value for environment '$ENV_KEY' is: $VALUE"
+
+        # Make it available to other steps
+        echo "AWS_ACCOUNT_ID=$VALUE" >> $GITHUB_ENV
+

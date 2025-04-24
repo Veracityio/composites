@@ -7,7 +7,7 @@ inputs:
   AWS_REGION:
     description: "The AWS region to use"
     required: true
-  AWS_ACCOUNT_ID:
+  INFRA_AWS_ACCOUNT_ID:
     description: "The AWS account ID to use"
     required: true
   ROLE_NAME:
@@ -17,23 +17,26 @@ inputs:
 outputs:
   token:
     description: "The github secret token"
-    value: ${{ steps.get-secret.outputs.SECRET_TOKEN }}
+    value: ${{ steps.get-secret-token.outputs.SECRET_TOKEN }}
+  slack_webhook_url:
+    description: "The slack webhook url"
+    value: ${{ steps.get-secret-webhook.outputs.SLACK_WEBHOOK_URL }}
 runs:
   using: "composite"
   steps:
     - name: Set AWS Role ARN
       shell: bash
       run: |
-        AWS_ROLE_ARN="arn:aws:iam::${{inputs.AWS_ACCOUNT_ID}}:role/${{ inputs.ROLE_NAME }}"
-        echo "INFRA_ROLE_ARN=$AWS_ROLE_ARN" >> $GITHUB_ENV
+        INFRA_ROLE_ARN="arn:aws:iam::${{inputs.INFRA_AWS_ACCOUNT_ID}}:role/${{ inputs.ROLE_NAME }}"
+        echo "INFRA_ROLE_ARN=$INFRA_ROLE_ARN" >> $GITHUB_ENV
     - name: Configure Infra AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1.7.0
       with:
         role-to-assume: ${{ env.INFRA_ROLE_ARN }} #change to reflect your IAM role’s ARN
         role-session-name: ${{ github.event.repository.name }}_infra_build
         aws-region: ${{ inputs.AWS_REGION }}
-    - name: Get secret value
-      id: get-secret
+    - name: Get secret token
+      id: get-secret-token
       shell: bash
       run: |
         # Get the JSON secret and parse it to extract SECRET_TOKEN
@@ -50,3 +53,21 @@ runs:
 
         # Set as output
         echo "::set-output name=SECRET_TOKEN::$SECRET_TOKEN"
+    - name: Get secret webhook
+      id: get-secret-webhook
+      shell: bash
+      run: |
+        # Get the JSON secret and parse it to extract SLACK_WEBHOOK_URL
+        SLACK_WEBHOOK_URL=$(aws secretsmanager get-secret-value \
+          --secret-id ${{ inputs.SECRET_ID }} \
+          --query 'SecretString' \
+          --output text | jq -r '.SLACK_WEBHOOK_URL')
+
+        # Mask the token
+        echo "::add-mask::$SLACK_WEBHOOK_URL"
+
+        # Set as environment variable
+        echo "SLACK_WEBHOOK_URL=$SLACK_WEBHOOK_URL" >> $GITHUB_ENV
+
+        # Set as output
+        echo "::set-output name=SLACK_WEBHOOK_URL::$SLACK_WEBHOOK_URL"
