@@ -74,7 +74,7 @@ runs:
     - name: Set AWS Account ID
       shell: bash
       run: |
-        JSON_DATA="${{ steps.aws_account_ids.outputs.AWS_ACCOUNT_IDS }}"
+        JSON_DATA=${{ steps.aws_account_ids.outputs.AWS_ACCOUNT_IDS }}
         # check if env.ENVIRONMENT is set
         if [ -z "${{ inputs.ENVIRONMENT }}" ]; then
           echo "ENVIRONMENT is not set, defaulting to 'dev'"
