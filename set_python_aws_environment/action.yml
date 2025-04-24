@@ -1,5 +1,6 @@
 name: Set Pipeline Variables from SSM
 description: "This action is intended on grabbing pipeline variables from AWS SSM as well as inputs and setting them as environment variables for the pipeline to use. It will take a series of inputs and if they are passed in, the variables will be set. If they are not passed in, the action will set them defaulted to 'NOT_SET'. There are a few concepts here in that this setup assumes there is a centralized infrastructure account, also there is an account that is the target. These accounts are in AWS. Also it is assumed that there is a singular name space for all pipeline roles regardless of account in an aws multi account scenario. Current variables are: INFRA_BUCKET (SSM), INFRA_ROLE_ARN (STATIC), INFRA_ACCOUNT_NUMBER (STATIC), PYTHON_VERSION (INPUT), AWS_REGION (STATIC), AWS_ACCOUNT_IDS (SSM), SECRET_TOKEN (SSM), ENVIRONMENT (INPUT), and APP_NAME (Github Repository Name). During this environment set, it will also log ingot aws, parse and install python from a pyproject.toml file, and grab a secret token from AWS Secrets Manager."
+
 inputs:
   SECRET_ID:
     description: "The secret ID to retrieve GH_TOKEN"
@@ -9,6 +10,9 @@ inputs:
     required: true
   INFRA_AWS_ACCOUNT_ID:
     description: "The Infra AWS account ID to use. This would be the account that holds the Secret referenced in SECRET_ID"
+    required: true
+  PROD_ACCOUNT_ID:
+    description: "The production AWS account ID to use. This would be the account that holds the Secret referenced in SECRET_ID"
     required: true
   ROLE_NAME:
     description: "The IAM role name to assume"
@@ -81,7 +85,7 @@ runs:
 
         # If production, grab value from repo variable
         if [ "$ENV_KEY" == "prd" ]; then
-          VALUE="${{ secrets.PRODUCTION_ACCOUNT_ID }}"
+          VALUE=${{ inputs.PROD_ACCOUNT_ID }}
         else
           # Extract the value using jq with the dynamic key
           VALUE=$(echo $JSON_DATA | jq -r --arg env "$ENV_KEY" '.[$env]')
@@ -91,4 +95,3 @@ runs:
 
         # Make it available to other steps
         echo "AWS_ACCOUNT_ID=$VALUE" >> $GITHUB_ENV
-
