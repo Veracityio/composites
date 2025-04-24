@@ -66,7 +66,6 @@ runs:
       shell: bash
       run: echo "APP_NAME=${{ github.event.repository.name }}" >> $GITHUB_ENV
     - name: Grab and set AWS Account JSON
-      id: aws_account_ids
       shell: bash
       run: |
         AWS_ACCOUNT_IDS=$(aws ssm get-parameter --name ${{ inputs.SSM_PARAMETER_PREFIX }}/${{ inputs.AWS_ACCOUNT_IDS_SSM_PARAMETER_NAME }} --region ${{ inputs.AWS_REGION }} --query 'Parameter.Value' --output text)
@@ -74,7 +73,7 @@ runs:
     - name: Set AWS Account ID
       shell: bash
       run: |
-        JSON_DATA=${{ steps.aws_account_ids.outputs.AWS_ACCOUNT_IDS }}
+        JSON_DATA=${{ env.AWS_ACCOUNT_IDS }}
         # check if env.ENVIRONMENT is set
         if [ -z "${{ inputs.ENVIRONMENT }}" ]; then
           echo "ENVIRONMENT is not set, defaulting to 'dev'"
