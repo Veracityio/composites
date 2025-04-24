@@ -81,7 +81,7 @@ runs:
 
         # If production, grab value from repo variable
         if [ "$ENV_KEY" == "prd" ]; then
-          VALUE="${{ vars.PRODUCTION_ACCOUNT_ID }}"
+          VALUE="${{ secrets.PRODUCTION_ACCOUNT_ID }}"
         else
           # Extract the value using jq with the dynamic key
           VALUE=$(echo $JSON_DATA | jq -r --arg env "$ENV_KEY" '.[$env]')
