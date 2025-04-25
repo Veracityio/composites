@@ -1,0 +1,47 @@
+name: Set Pipeline Variables from SSM
+description: "This actions sets all remaining required environment variables for the pipeline."
+
+inputs:
+  PYTHON_VERSION:
+    description: "The Python version to use for pipeline."
+    required: true
+  AWS_REGION:
+    description: "The AWS region to use"
+    required: true
+  INFRA_AWS_ACCOUNT_ID:
+    description: "The Infra AWS account ID to use. This would be the account that holds the Secret referenced in SECRET_ID"
+    required: true
+  INFRA_BUCKET_NAME:
+    description: "The SSM parameter name for the infra bucket"
+    required: true
+  DEPLOYMENT_ACCOUNT_ID:
+    description: "The AWS account ID to use for deployment purposes. This would be the account that holds the Secret referenced in SECRET_ID"
+    required: true
+  ENVIRONMENT:
+    description: "The environment to deploy to"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set Python Version
+      shell: bash
+      run: echo "PYTHON_VERSION=${{ inputs.python-version }}" >> $GITHUB_ENV
+    - name: Set Environment
+      shell: bash
+      run: echo "ENVIRONMENT=${{ inputs.ENVIRONMENT }}" >> $GITHUB_ENV
+    - name: Set Infra AWS Account ID
+      shell: bash
+      run: echo "INFRA_AWS_ACCOUNT_ID=${{ inputs.INFRA_AWS_ACCOUNT_ID }}" >> $GITHUB_ENV
+    - name: Set AWS Region
+      shell: bash
+      run: echo "AWS_REGION=${{ inputs.AWS_REGION }}" >> $GITHUB_ENV
+    - name: Grab and set Infra Bucket SSM
+      shell: bash
+      run: echo "INFRA_BUCKET_NAME=${{ inputs.INFRA_BUCKET_NAME }}" >> $GITHUB_ENV
+    - name: Set APP_NAME
+      shell: bash
+      run: echo "APP_NAME=${{ github.event.repository.name }}" >> $GITHUB_ENV
+    - name: Set Deployment AWS Account ID
+      shell: bash
+      run: echo "DEPLOYMENT_ACCOUNT_ID=${{ inputs.DEPLOYMENT_ACCOUNT_ID }}" >> $GITHUB_ENV
